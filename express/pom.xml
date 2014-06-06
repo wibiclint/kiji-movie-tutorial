@@ -83,7 +83,7 @@
   </build>
 
   <dependencies>
-    <!-- directv -->
+    <!-- tutorial modules -->
     <dependency>
       <groupId>org.kiji.tutorial</groupId>
       <artifactId>movie-advisor-avro</artifactId>

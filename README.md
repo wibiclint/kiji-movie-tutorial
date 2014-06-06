@@ -13,3 +13,4 @@ TODOs:
 - what to use for K?  (K = number of items similar to the item in question that a user has rated to
   try to predict rating for item in question)
 - Note that M should be much greater than K (need to balance memory with accuracy)
+- Should be bulk-loading into HFiles (or something else for Cassandra)
