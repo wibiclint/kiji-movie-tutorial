@@ -1,0 +1,45 @@
+@namespace("org.kiji.tutorial.movies.avro")
+
+protocol Types {
+
+  enum Gender {
+    MALE, FEMALE
+  }
+
+  // All of the information that we get from MovieLens about a given user.
+  record Person {
+    long user_id;
+    int age;
+    Gender gender;
+    string occupation;
+    string zip_code; // International zip codes can have letters in them.
+  }
+
+  // All of the information we have about a single instance of rating a movie.
+  record MovieRating {
+    long movie_id;
+    int rating;
+    long timestamp;
+  }
+
+  record ItemSimilarityScore {
+    long item;
+    double similarity;
+  }
+
+  record SortedSimilarities {
+    array<ItemSimilarityScore> similarities;
+  }
+
+  // A weighted show recommendation.
+  record ShowRecommendation {
+    long show_id;
+    double weight;
+  }
+
+  // A collection of recommended shows.
+  record ShowRecommendations {
+    array<ShowRecommendation> recommendations;
+  }
+
+}
