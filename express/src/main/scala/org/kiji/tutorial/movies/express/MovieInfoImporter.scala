@@ -23,9 +23,11 @@ import com.twitter.scalding.Args
 import com.twitter.scalding.TextLine
 import org.kiji.express.flow.EntityId
 import org.kiji.express.flow.KijiOutput
-import org.kiji.tutorial.movies.avro.MovieRating
+import org.kiji.tutorial.movies.avro.MovieInfo
 import org.kiji.schema.KijiURI
 import java.util.Date
+import scala.collection.JavaConversions._
+
 
 /**
  * Populates movie metadata.
@@ -40,40 +42,32 @@ class MovieInfoImporter(args: Args) extends MovieJob(args) {
   TextLine(args("movie-info"))
       .read
       .project('line)
-      .mapTo('line -> ('movieId, 'movieTitle, 'releaseDate, 'videoReleaseDate, 'imdbUrl, 'genres))( MovieInfoImporter.parseLine)
+      // Skip blank lines
+      .filter('line) { line:String => !MovieInfoImporter.lineIsBlank(line) }
+      .mapTo('line -> ('movieId, 'movieInfo)) (MovieInfoImporter.parseLine)
 
-      // Mark the user as the entityId
-      .map('user -> 'entityId) { user: Long => EntityId(user) }
-
-      // Create a MovieRating Avro item
-      .map(('movie, 'rating, 'timestamp) -> 'movieRating) {
-        x: (Long, Int, Long) =>
-            val (movie, rating, timestamp) = x
-            MovieRating
-            .newBuilder()
-            .setMovieId(movie)
-            .setRating(rating)
-            .setTimestamp(timestamp).build
-      }
+      // Mark the movie as the entityId
+      .map('movieId -> 'entityId) { movieId: Long => EntityId(movieId.toString) }
+      .project('entityId, 'movieInfo)
+      .debug
 
       .write(KijiOutput.builder
           .withTableURI(
-            KijiURI.newBuilder(kijiUri).withTableName("users").build()
+            KijiURI.newBuilder(kijiUri).withTableName("movies").build()
           )
-          .withColumns('movieRating -> "ratings:ratings")
-          .withTimestampField('timestamp)
+          .withColumns('movieInfo -> "info:info")
           .build)
 }
 
 object MovieInfoImporter {
-  def parseLine(line: String): (Long, String, Long, Option[Long], String, Set[String]) = {
+  def parseLine(line: String): (Long, MovieInfo) = {
     val tokens: Array[String] = line.split('|')
+    assert(tokens.length == 5 + genreChoices.length, "Line = " + line)
     val movieId = tokens(0).toLong
     val movieTitle = tokens(1)
-    val releaseDate = dateStringToLong(tokens(2))
-    val videoReleaseDate = if (tokens(3) == "") None else Some(dateStringToLong(tokens(3)))
-    val imdbUrl = tokens(4)
-    assert(imdbUrl.startsWith("http://"), "Weird URL! " + imdbUrl)
+    val releaseDate = parseDate(tokens(2))
+    val videoReleaseDate = parseDate(tokens(3))
+    val imdbUrl = if (tokens(4) == "") None else Some(tokens(4))
 
     // Get all of the 1s or 0s for whether to choose a given genre.
     val genreSelections = tokens.drop(5)
@@ -82,12 +76,31 @@ object MovieInfoImporter {
         .filter(_._1 == "1")
         .map(_._2)
         .toSet
-    (movieId, movieTitle, releaseDate, videoReleaseDate, imdbUrl, genres)
+
+    val movieInfo = MovieInfo.newBuilder()
+        .setGenres(genres.toList)
+        .setImdbUrl(if (imdbUrl == None) null else imdbUrl.get)
+        .setMovieId(movieId)
+        .setTitle(movieTitle)
+        .setTheaterReleaseDate(if (releaseDate == None) null else releaseDate.get)
+        .setVideoReleaseDate(if (videoReleaseDate == None) null else videoReleaseDate.get)
+        .build()
+    (movieId, movieInfo)
   }
 
-  def dateStringToLong(dateAsString: String): Long = {
-    val date: Date = dateFormat.parse(dateAsString)
-    date.getTime
+  def parseDate(dateAsString: String): Option[Long] = {
+    if (dateAsString == "") {
+      None
+    } else {
+      val date: Date = dateFormat.parse(dateAsString)
+      Some(date.getTime)
+    }
+  }
+
+  def lineIsBlank(line: String): Boolean = {
+    // Pattern for a blank line
+    val p = ("^\\s*$").r
+    !p.findFirstIn(line).isEmpty
   }
 
   val dateFormat = new java.text.SimpleDateFormat("dd-MMM-yyyy")

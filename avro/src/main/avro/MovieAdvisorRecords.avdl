@@ -22,6 +22,15 @@ protocol Types {
     long timestamp;
   }
 
+  record MovieInfo {
+    long movie_id;
+    string title;
+    union {null, long} theater_release_date;
+    union {null, long} video_release_date;
+    union {null, string} imdb_url;
+    array<string> genres;
+  }
+
   record ItemSimilarityScore {
     long item;
     double similarity;

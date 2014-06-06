@@ -30,6 +30,7 @@ class MovieAdvisorManager:
         'create-tables',
         'import-ratings',
         'import-user-info',
+        'import-movie-info',
     ]
 
     actions_help = {
@@ -46,6 +47,9 @@ class MovieAdvisorManager:
 
         "import-user-info":
             "Run an express job to import user information",
+
+        "import-movie-info":
+            "Run an express job to import movie information",
 
         "help-actions":
             "Print this help",
@@ -173,7 +177,7 @@ class MovieAdvisorManager:
 
         self.actions = opts.action
         for action in self.actions:
-            assert action in self.possible_actions
+            assert action in self.possible_actions, "Action %s is not a known action for the script" % action
 
         self.b_kill_bento = opts.kill_bento
 
@@ -284,12 +288,20 @@ class MovieAdvisorManager:
         self._scan_table("users")
 
     def _do_action_import_user_info(self):
-        """ Import the movie ratings with an Express job. """
+        """ Import the user metadata with an Express job. """
         self._run_express_job(
             "org.kiji.tutorial.movies.express.UserInfoImporter",
             options="--user-info ml-100k/u.user"
         )
         self._scan_table("users")
+
+    def _do_action_import_movie_info(self):
+        """ Import the movie metadata with an Express job. """
+        self._run_express_job(
+            "org.kiji.tutorial.movies.express.MovieInfoImporter",
+            options="--movie-info ml-100k/u.item"
+        )
+        self._scan_table("movies")
 
     def _run_actions(self):
         """ Run whatever actions the user has specified """
@@ -305,6 +317,9 @@ class MovieAdvisorManager:
 
         if "import-user-info" in self.actions:
             self._do_action_import_user_info()
+
+        if "import-movie-info" in self.actions:
+            self._do_action_import_movie_info()
 
     def go(self, args):
         self._parse_options(args)

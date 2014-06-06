@@ -6,12 +6,8 @@ WITH LOCALITY GROUP default (
     INMEMORY = false,
     COMPRESSED WITH GZIP,
     FAMILY info (
-        title "string",
-        release_date "long",
-        video_release_date "long",
-        imdb_url "string"
-    ),
-    MAP TYPE FAMILY genres "string"
+        info CLASS org.kiji.tutorial.movies.avro.MovieInfo
+    )
 ), LOCALITY GROUP in_memory (
     MAXVERSIONS = INFINITY,
     TTL = FOREVER,
