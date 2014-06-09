@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.kiji.schema.util.InstanceBuilder
+import org.kiji.tutorial.MovieSuite
 
 @RunWith(classOf[JUnitRunner])
 class TestMovieInfoImporterSuite extends MovieSuite {

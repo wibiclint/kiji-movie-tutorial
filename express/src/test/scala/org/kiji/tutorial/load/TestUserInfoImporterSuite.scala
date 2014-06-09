@@ -1,15 +1,14 @@
 package org.kiji.tutorial.load
 
 import com.google.common.io.Files
-import java.io.{FileInputStream, FileWriter, BufferedWriter, File}
-import com.twitter.scalding.{IterableSource, Hdfs, Mode, Args}
+import java.io.{FileWriter, BufferedWriter, File}
+import com.twitter.scalding.{Hdfs, Mode, Args}
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.commons.io.FileUtils
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.kiji.schema.KijiClientTest
 import org.kiji.schema.util.InstanceBuilder
-import org.kiji.tutorial.load.UserInfoImporter
+import org.kiji.tutorial.MovieSuite
 
 @RunWith(classOf[JUnitRunner])
 class TestUserInfoImporterSuite extends MovieSuite {

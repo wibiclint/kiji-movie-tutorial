@@ -16,9 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kiji.tutorial.load
+package org.kiji.tutorial
 
-import com.google.common.io.Files
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.kiji.express.KijiSuite
@@ -29,10 +28,9 @@ import org.kiji.schema.Kiji
 import org.kiji.schema.KijiURI
 import org.kiji.schema.shell.api.Client
 import org.kiji.schema.KijiTable
-import org.kiji.express.flow.KijiJob
 
 @RunWith(classOf[JUnitRunner])
-trait MovieSuite extends KijiSuite {
+trait MovieSuite extends KijiSuite with TestPipeConversions {
   val logger: Logger = LoggerFactory.getLogger(classOf[MovieSuite])
 
   /**
