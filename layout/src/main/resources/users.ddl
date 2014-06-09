@@ -6,9 +6,8 @@ WITH LOCALITY GROUP default (
     INMEMORY = false,
     COMPRESSED WITH GZIP,
     FAMILY info (
-      info CLASS org.kiji.tutorial.movies.avro.Person
+      info CLASS org.kiji.tutorial.avro.Person
     ),
-    FAMILY ratings (
-      ratings CLASS org.kiji.tutorial.movies.avro.MovieRating
-    )
+    MAP TYPE FAMILY ratings WITH SCHEMA CLASS org.kiji.tutorial.avro.MovieRating
+      WITH DESCRIPTION 'Map from movie IDs to ratings'
 );

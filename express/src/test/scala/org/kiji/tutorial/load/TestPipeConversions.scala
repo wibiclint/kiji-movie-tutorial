@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import scala.collection.mutable
 
@@ -43,7 +43,7 @@ import org.kiji.express.KijiSuite
 @ApiAudience.Private
 @ApiStability.Stable
 @Inheritance.Sealed
-private[express] trait TestPipeConversions {
+private[load] trait TestPipeConversions {
   implicit def pipe2TestPipe(pipe: Pipe): TestPipe = new TestPipe(pipe)
 }
 

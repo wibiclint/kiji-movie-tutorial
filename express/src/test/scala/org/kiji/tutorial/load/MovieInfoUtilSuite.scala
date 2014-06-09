@@ -1,11 +1,9 @@
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import org.scalatest.junit.AssertionsForJUnit
-import scala.collection.mutable.ListBuffer
 import org.junit.Assert._
 import org.junit.Test
-import org.junit.Before
-import org.kiji.tutorial.movies.avro.MovieInfo
+import org.kiji.tutorial.avro.MovieInfo
 import scala.collection.JavaConverters._
 
 

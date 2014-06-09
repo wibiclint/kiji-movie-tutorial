@@ -1,4 +1,4 @@
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import com.google.common.io.Files
 import java.io.{FileInputStream, FileWriter, BufferedWriter, File}
@@ -9,6 +9,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.kiji.schema.KijiClientTest
 import org.kiji.schema.util.InstanceBuilder
+import org.kiji.tutorial.load.UserInfoImporter
 
 @RunWith(classOf[JUnitRunner])
 class TestUserInfoImporterSuite extends MovieSuite {

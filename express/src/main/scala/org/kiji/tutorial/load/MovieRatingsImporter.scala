@@ -17,18 +17,15 @@
  * limitations under the License.
  */
 
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import com.twitter.scalding.Args
 import com.twitter.scalding.TextLine
-import cascading.pipe.Pipe
 
-import org.kiji.express.flow.ColumnFamilyOutputSpec
-import org.kiji.express.flow.EntityId
-import org.kiji.express.flow.KijiJob
-import org.kiji.express.flow.KijiOutput
-import org.kiji.tutorial.movies.avro.MovieRating
+import org.kiji.express.flow.{ColumnFamilyOutputSpec, EntityId, KijiOutput}
+import org.kiji.tutorial.avro.MovieRating
 import org.kiji.schema.KijiURI
+import org.kiji.tutorial.MovieJob
 
 /**
  * Populates a table of movie ratings.
@@ -66,10 +63,10 @@ class MovieRatingsImporter(args: Args) extends MovieJob(args) {
       }
 
       .write(KijiOutput.builder
-          .withTableURI(
-            KijiURI.newBuilder(kijiUri).withTableName("users").build()
-          )
-          .withColumns('movieRating -> "ratings:ratings")
-          .withTimestampField('timestamp)
+          .withTableURI(usersUri)
+          .withColumnSpecs(Map('movieRating -> ColumnFamilyOutputSpec.builder
+              .withFamily("ratings")
+              .withQualifierSelector('movie)
+              .build))
           .build)
 }

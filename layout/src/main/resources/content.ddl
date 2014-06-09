@@ -6,11 +6,13 @@ WITH LOCALITY GROUP default (
     INMEMORY = false,
     COMPRESSED WITH GZIP,
     FAMILY info (
-        info CLASS org.kiji.tutorial.movies.avro.MovieInfo
+        info CLASS org.kiji.tutorial.avro.MovieInfo
     )
 ), LOCALITY GROUP in_memory (
     MAXVERSIONS = INFINITY,
     TTL = FOREVER,
     INMEMORY = true,
-    MAP TYPE FAMILY most_similar CLASS org.kiji.tutorial.movies.avro.SortedSimilarities
+    FAMILY most_similar (
+      most_similar CLASS org.kiji.tutorial.avro.SortedSimilarities
+    )
 );

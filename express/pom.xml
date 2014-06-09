@@ -126,6 +126,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.kiji.modeling</groupId>
+      <artifactId>kiji-modeling</artifactId>
+      <version>${kiji-modeling.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
      <!--Misc dependencies-->
     <dependency>
       <groupId>log4j</groupId>

@@ -17,16 +17,18 @@
  * limitations under the License.
  */
 
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import com.twitter.scalding.Args
 import com.twitter.scalding.TextLine
 import org.kiji.express.flow.EntityId
 import org.kiji.express.flow.KijiOutput
-import org.kiji.tutorial.movies.avro.MovieInfo
+import org.kiji.tutorial.avro.MovieInfo
 import org.kiji.schema.KijiURI
 import java.util.Date
 import scala.collection.JavaConversions._
+import org.kiji.tutorial.MovieJob
+import com.twitter.scalding.typed.TDsl
 
 
 /**
@@ -38,25 +40,29 @@ import scala.collection.JavaConversions._
  * @param args passed in from the command line.
  */
 class MovieInfoImporter(args: Args) extends MovieJob(args) {
-  // Get user ratings
+  // Use typed pipes
+  import TDsl._
+
+  // Get the movie metadata.
   TextLine(args("movie-info"))
       .read
-      .project('line)
-      // Skip blank lines
-      .filter('line) { line:String => !MovieInfoImporter.lineIsBlank(line) }
-      .mapTo('line -> ('movieId, 'movieInfo)) (MovieInfoImporter.parseLine)
+      .toTypedPipe[String]('line)
 
-      // Mark the movie as the entityId
-      .map('movieId -> 'entityId) { movieId: Long => EntityId(movieId.toString) }
-      .project('entityId, 'movieInfo)
-      .debug
+      // Skip blank lines
+      .filter(!MovieInfoImporter.lineIsBlank(_))
+
+      .map(MovieInfoImporter.parseLine)
+      // Now we have a typed pipe of [Long - movieId, MovieInfo - movieInfo]
+
+      .map{x => (EntityId(x._1.toString), x._2)}
+      // Now we have a typed pipe of [EntityId - eid, MovieInfo - movieInfo]
+
+      .toPipe('entityId, 'movieInfo)
 
       .write(KijiOutput.builder
-          .withTableURI(
-            KijiURI.newBuilder(kijiUri).withTableName("movies").build()
-          )
-          .withColumns('movieInfo -> "info:info")
-          .build)
+      .withTableURI(moviesUri)
+      .withColumns('movieInfo -> "info:info")
+      .build)
 }
 
 object MovieInfoImporter {

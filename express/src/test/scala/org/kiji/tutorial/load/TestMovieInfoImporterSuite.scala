@@ -1,4 +1,4 @@
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import com.google.common.io.Files
 import java.io.{FileWriter, BufferedWriter, File}

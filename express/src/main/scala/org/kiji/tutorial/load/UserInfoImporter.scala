@@ -17,15 +17,16 @@
  * limitations under the License.
  */
 
-package org.kiji.tutorial.movies.express
+package org.kiji.tutorial.load
 
 import com.twitter.scalding.Args
 import com.twitter.scalding.TextLine
 import org.kiji.express.flow.EntityId
 import org.kiji.express.flow.KijiOutput
-import org.kiji.tutorial.movies.avro.Person
-import org.kiji.tutorial.movies.avro.Gender
+import org.kiji.tutorial.avro.Person
+import org.kiji.tutorial.avro.Gender
 import org.kiji.schema.KijiURI
+import org.kiji.tutorial.MovieJob
 
 /**
  * Populates all of our information about various users.
@@ -57,9 +58,7 @@ class UserInfoImporter(args: Args) extends MovieJob(args) {
       } }
 
       .write(KijiOutput.builder
-          .withTableURI(
-            KijiURI.newBuilder(kijiUri).withTableName("users").build()
-          )
+          .withTableURI(usersUri)
           .withColumns('userInfo -> "info:info")
           .build)
 }

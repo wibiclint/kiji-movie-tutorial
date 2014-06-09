@@ -1,4 +1,4 @@
-@namespace("org.kiji.tutorial.movies.avro")
+@namespace("org.kiji.tutorial.avro")
 
 protocol Types {
 

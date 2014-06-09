@@ -16,17 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kiji.tutorial.movies.express
-
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
+package org.kiji.tutorial.load
 
 import com.google.common.io.Files
-import com.twitter.scalding.Hdfs
-import com.twitter.scalding.Mode
-import com.twitter.scalding.Args
-import com.twitter.scalding.IterableSource
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.kiji.express.KijiSuite
@@ -37,10 +29,7 @@ import org.kiji.schema.Kiji
 import org.kiji.schema.KijiURI
 import org.kiji.schema.shell.api.Client
 import org.kiji.schema.KijiTable
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.Path
-import org.kiji.express.flow.{KijiJob, ExpressKeyValueStore}
+import org.kiji.express.flow.KijiJob
 
 @RunWith(classOf[JUnitRunner])
 trait MovieSuite extends KijiSuite {
