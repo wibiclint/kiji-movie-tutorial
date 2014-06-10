@@ -46,7 +46,7 @@ class TestMovieInfoImporterSuite extends MovieSuite {
     ))
     val argsWithMode = Mode.putMode(Hdfs(strict = false, conf = HBaseConfiguration.create()), args)
     val jobTest = new MovieInfoImporter(argsWithMode)
-    jobTest.run
+    assert(jobTest.run)
     FileUtils.deleteDirectory(outputDir)
   }
 }

@@ -14,6 +14,7 @@ TODOs:
   try to predict rating for item in question)
 - Note that M should be much greater than K (need to balance memory with accuracy)
 - Should be bulk-loading into HFiles (or something else for Cassandra)
+- Use typed pipes everywhere in Express code and use case classes for pipe types
 - Possibly implement some batch recommenders in Java to show how to use KijiMR and KijiSchema
 - Calculate global best movies to use as default recommendations?
 - Set up a model repository and scoring server?

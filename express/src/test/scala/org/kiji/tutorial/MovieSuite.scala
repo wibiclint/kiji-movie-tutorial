@@ -38,32 +38,38 @@ trait MovieSuite extends KijiSuite with TestPipeConversions {
    * testing library.
    */
   def createTableAndPopulateTableAndReturnUri(
-     ddl: String,
-     tableName: String,
-     functionToPopulateTable: InstanceBuilder#TableBuilder => Unit,
-     instanceName: String = "default_%s".format(counter.incrementAndGet())
+    ddl: String,
+    tableName: String,
+    functionToPopulateTable: InstanceBuilder#TableBuilder => Unit,
+    kiji: Option[Kiji] = None
    ): String = {
 
-    val kiji: Kiji = new InstanceBuilder(instanceName).build()
+    val myKiji: Kiji = kiji match {
+      case None => new InstanceBuilder("default_%s".format(counter.incrementAndGet)).build
+      case Some(k: Kiji) => k
+    }
+
     try {
       // Create the instance
-      val kijiUri: KijiURI = kiji.getURI
+      val kijiUri: KijiURI = myKiji.getURI
 
       val client: Client = Client.newInstance(kijiUri)
       client.executeUpdate(ddl)
       client.close()
 
-      val table: KijiTable = kiji.openTable(tableName)
+      val table: KijiTable = myKiji.openTable(tableName)
       try {
         // Populate the table!!!!
-        functionToPopulateTable(new InstanceBuilder(kiji).withTable(table))
+        functionToPopulateTable(new InstanceBuilder(myKiji).withTable(table))
 
         table.getURI.toString
       } finally {
         table.release()
       }
     } finally {
-      kiji.release()
+      if (kiji.isEmpty) {
+        myKiji.release()
+      }
     }
   }
 }

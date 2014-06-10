@@ -40,7 +40,7 @@ class TestUserInfoImporterSuite extends MovieSuite {
     ))
     val argsWithMode = Mode.putMode(Hdfs(strict = false, conf = HBaseConfiguration.create()), args)
     val jobTest = new UserInfoImporter(argsWithMode)
-    jobTest.run
+    assert(jobTest.run)
     FileUtils.deleteDirectory(outputDir)
   }
 }

@@ -15,21 +15,28 @@ class ItemSimilarityCalculator(args: Args) extends MovieJob(args) with ModelPipe
   // Read all of the movie ratings data.
   val userRatingsPipe = KijiInput.builder
       .withTableURI(usersUri)
-      .withColumns("ratings:ratings" -> 'ratingInfo)
+      .withColumnSpecs(
+        ColumnFamilyInputSpec
+            .builder
+            .withFamily("ratings")
+            .withSchemaSpec(SchemaSpec.Specific(classOf[MovieRating]))
+            .build -> 'ratingInfo)
       .build
       .read
+      .debug
       .toTypedPipe[(EntityId, Seq[FlowCell[MovieRating]])]('entityId, 'ratingInfo)
 
       // Turn the entity Id into a user Id and extract the movie and the movie's rating.
-      .map { eidAndCells =>
+      .flatMap { eidAndCells =>
         val (eid, cells: Seq[FlowCell[MovieRating]]) = eidAndCells
-        val userId: Long = eid.components(0).asInstanceOf[Long]
-        assert(cells.length == 1, "Should have only one review per user per movie")
+        val userId: Long = eid.components(0).asInstanceOf[String].toLong
 
-        val cell: FlowCell[MovieRating] = cells(0)
-        val movieId: Long = cell.datum.getMovieId
-        val rating: Double = cell.datum.getRating.toDouble
-        (userId, movieId, rating)
+        // Go from a list of cells to a list of (userId, movieId, rating)
+        cells.map { cell: FlowCell[MovieRating] =>
+          val movieId: Long = cell.datum.getMovieId
+          val rating: Double = cell.datum.getRating.toDouble
+          (userId, movieId, rating)
+        }
       }
 
   val itemItemSimilarityPipe = ItemSimilarityCalculator.calculateItemSimilaritiesFromUserRatings(userRatingsPipe)
@@ -40,7 +47,8 @@ class ItemSimilarityCalculator(args: Args) extends MovieJob(args) with ModelPipe
 
   // Convert the movieId to an entityId and write to the Kiji table.
   similarityRecordsPipe
-      .map { x: (Long, SortedSimilarities) => (EntityId(x._1), x._2) }
+      .debug
+      .map { x: (Long, SortedSimilarities) => (EntityId(x._1.toString), x._2) }
       .toPipe('entityId, 'mostSimilar)
       .write(KijiOutput.builder
           .withTableURI(moviesUri)

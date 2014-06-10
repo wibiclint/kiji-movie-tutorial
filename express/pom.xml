@@ -127,9 +127,23 @@
     </dependency>
 
     <dependency>
+      <groupId>org.kiji.express</groupId>
+      <artifactId>kiji-express-tools</artifactId>
+      <version>${kiji-express.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.kiji.modeling</groupId>
       <artifactId>kiji-modeling</artifactId>
       <version>${kiji-modeling.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kiji.mapreduce</groupId>
+      <artifactId>kiji-mapreduce</artifactId>
+      <version>${kiji-mapreduce.version}</version>
       <scope>provided</scope>
     </dependency>
 

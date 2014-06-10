@@ -68,7 +68,7 @@ class MovieAdvisorManager:
     # This is the path from movie_advisor_home
     ddls = (
         'layout/src/main/resources/users.ddl',
-        'layout/src/main/resources/content.ddl',
+        'layout/src/main/resources/movies.ddl',
     )
 
     express_jar = 'express/target/express-1.0-SNAPSHOT.jar'
