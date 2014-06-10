@@ -31,6 +31,7 @@ class MovieAdvisorManager:
         'import-ratings',
         'import-user-info',
         'import-movie-info',
+        'train-item-item-cf',
     ]
 
     actions_help = {
@@ -50,6 +51,9 @@ class MovieAdvisorManager:
 
         "import-movie-info":
             "Run an express job to import movie information",
+
+        "train-item-item-cf":
+            "Calculate item-item similarities",
 
         "help-actions":
             "Print this help",
@@ -282,7 +286,7 @@ class MovieAdvisorManager:
     def _do_action_import_ratings(self):
         """ Import the movie ratings with an Express job. """
         self._run_express_job(
-            "org.kiji.tutorial.movies.express.MovieRatingsImporter",
+            "org.kiji.tutorial.load.MovieRatingsImporter",
             options="--ratings ml-100k/u.data"
         )
         self._scan_table("users")
@@ -290,7 +294,7 @@ class MovieAdvisorManager:
     def _do_action_import_user_info(self):
         """ Import the user metadata with an Express job. """
         self._run_express_job(
-            "org.kiji.tutorial.movies.express.UserInfoImporter",
+            "org.kiji.tutorial.load.UserInfoImporter",
             options="--user-info ml-100k/u.user"
         )
         self._scan_table("users")
@@ -298,8 +302,15 @@ class MovieAdvisorManager:
     def _do_action_import_movie_info(self):
         """ Import the movie metadata with an Express job. """
         self._run_express_job(
-            "org.kiji.tutorial.movies.express.MovieInfoImporter",
+            "org.kiji.tutorial.load.MovieInfoImporter",
             options="--movie-info ml-100k/u.item"
+        )
+        self._scan_table("movies")
+
+    def _do_action_train(self):
+        """ Import the movie metadata with an Express job. """
+        self._run_express_job(
+            "org.kiji.tutorial.train.ItemSimilarityCalculator"
         )
         self._scan_table("movies")
 
@@ -320,6 +331,9 @@ class MovieAdvisorManager:
 
         if "import-movie-info" in self.actions:
             self._do_action_import_movie_info()
+
+        if "train-item-item-cf" in self.actions:
+            self._do_action_train()
 
     def go(self, args):
         self._parse_options(args)
