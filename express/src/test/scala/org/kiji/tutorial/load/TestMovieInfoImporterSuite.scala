@@ -35,7 +35,7 @@ class TestMovieInfoImporterSuite extends MovieSuite {
     bw.close()
 
     // Create a temp Kiji and create the table.
-    val ddl = io.Source.fromInputStream(getClass.getResourceAsStream("/content.ddl")).mkString
+    val ddl = io.Source.fromInputStream(getClass.getResourceAsStream("/movies.ddl")).mkString
     def nullPopulate(tableBuilder: InstanceBuilder#TableBuilder): Unit = { }
 
     val tableUri: String = createTableAndPopulateTableAndReturnUri(ddl, "movies", nullPopulate)

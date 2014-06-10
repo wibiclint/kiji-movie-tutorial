@@ -28,6 +28,8 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.kiji.mapreduce.kvstore.KeyValueStore;
 import org.kiji.mapreduce.kvstore.KeyValueStoreReader;
@@ -51,6 +53,7 @@ import org.kiji.tutorial.avro.SortedSimilarities;
  * and precalculated track-track recommendations.
  */
 public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecommendations> {
+  private static Logger LOG = LoggerFactory.getLogger(MovieRecommendationScoreFunction.class);
 
   private static final String KVS_NAME = "kvs-most-similar-movies";
 
@@ -72,6 +75,8 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
       final FreshenerGetStoresContext context
   ) {
     final String tableURI = context.getParameter(KEY_VALUE_STORE_TABLE_URI_PARAMETER_KEY);
+
+    LOG.info("Using table URI " + tableURI);
 
     final KeyValueStore<?, ?> kvstore = KijiTableKeyValueStore.builder()
         .withTable(KijiURI.newBuilder(tableURI).build())
@@ -99,7 +104,7 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
   ) throws IOException {
     // Open the key value store reader from which we can get recommendations.
     final KeyValueStoreReader<KijiRowKeyComponents, SortedSimilarities> mostSimilarMoviesReader =
-        context.getStore(context.getParameter(KVS_NAME));
+        context.getStore(KVS_NAME);
 
     // Get all of the movies that the user has rated above 3.5 stars.
     Set<Long> moviesUserLikes = Sets.newHashSet();
@@ -124,8 +129,15 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
     Map<Long, Double> moviesToScores = Maps.newHashMap();
 
     for (Long movieId: moviesUserLikes) {
+      SortedSimilarities sortedSimilarities = mostSimilarMoviesReader
+          .get(KijiRowKeyComponents.fromComponents(movieId.toString()));
+      if (null == sortedSimilarities) {
+        LOG.info("Could not find any similar movies for movie " + movieId);
+        // TODO: Do something smarter if there is a problem generating a recommendation.
+        return new MovieRecommendations(Lists.<MovieRecommendation>newArrayList());
+      }
       List<ItemSimilarityScore> similarMovies = mostSimilarMoviesReader
-          .get(KijiRowKeyComponents.fromComponents(movieId)).getSimilarities();
+          .get(KijiRowKeyComponents.fromComponents(movieId.toString())).getSimilarities();
       for (ItemSimilarityScore itemSimilarityScore : similarMovies) {
         Long similarMovie = itemSimilarityScore.getItem();
         // Don't recommend a movie that the user has already seen!

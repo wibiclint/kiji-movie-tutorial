@@ -49,7 +49,7 @@ class MovieRatingsImporter(args: Args) extends MovieJob(args) {
       }
 
       // Mark the user as the entityId
-      .map('user -> 'entityId) { user: Long => EntityId(user) }
+      .map('user -> 'entityId) { user: Long => EntityId(user.toString) }
 
       // Create a MovieRating Avro item
       .map(('movie, 'rating, 'timestamp) -> 'movieRating) {

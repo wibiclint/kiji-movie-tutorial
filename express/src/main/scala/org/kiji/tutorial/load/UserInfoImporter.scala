@@ -54,7 +54,7 @@ class UserInfoImporter(args: Args) extends MovieJob(args) {
             .setUserId(user)
             .setZipCode(zipcode)
             .build
-        (EntityId(user), person)
+        (EntityId(user.toString), person)
       } }
 
       .write(KijiOutput.builder

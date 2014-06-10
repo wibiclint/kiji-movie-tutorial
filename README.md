@@ -17,3 +17,4 @@ TODOs:
 - Possibly implement some batch recommenders in Java to show how to use KijiMR and KijiSchema
 - Calculate global best movies to use as default recommendations?
 - Set up a model repository and scoring server?
+- Test for importing ratings!

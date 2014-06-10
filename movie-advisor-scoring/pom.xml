@@ -56,7 +56,12 @@
     <dependency>
       <groupId>org.kiji.schema</groupId>
       <artifactId>kiji-schema</artifactId>
-      <version>1.4.2</version>
+      <version>${kiji-schema.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.kiji.schema-shell</groupId>
+      <artifactId>kiji-schema-shell</artifactId>
+      <version>${kiji-schema-shell.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kiji.platforms</groupId>
@@ -66,7 +71,7 @@
     <dependency>
       <groupId>org.kiji.mapreduce</groupId>
       <artifactId>kiji-mapreduce</artifactId>
-      <version>1.2.8</version>
+      <version>${kiji-mapreduce.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kiji.scoring</groupId>
@@ -79,6 +84,28 @@
       <artifactId>movie-advisor-avro</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
+    </dependency>
+
+    <!--Test stuff-->
+    <dependency>
+      <groupId>org.kiji.schema</groupId>
+      <artifactId>kiji-schema</artifactId>
+      <version>${kiji-schema.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kiji.testing</groupId>
+      <artifactId>fake-hbase</artifactId>
+      <version>${fake-hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Table layouts -->
+    <dependency>
+      <groupId>org.kiji.tutorial</groupId>
+      <artifactId>movie-advisor-layout</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
