@@ -41,14 +41,14 @@ protocol Types {
   }
 
   // A weighted show recommendation.
-  record ShowRecommendation {
+  record MovieRecommendation {
     long show_id;
     double weight;
   }
 
   // A collection of recommended shows.
-  record ShowRecommendations {
-    array<ShowRecommendation> recommendations;
+  record MovieRecommendations {
+    array<MovieRecommendation> recommendations;
   }
 
 }
