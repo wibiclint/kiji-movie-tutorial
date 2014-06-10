@@ -124,27 +124,33 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
       final Set<Long> moviesUserLikes,
       final KeyValueStoreReader<KijiRowKeyComponents, SortedSimilarities> mostSimilarMoviesReader
   ) throws IOException {
+    LOG.info("Performing scoring for movie recommendations");
+    LOG.info("The user likes the movies: " + moviesUserLikes);
 
     // Map from movie IDs to the sum of similarity to that movie versus any that the user likes.
     Map<Long, Double> moviesToScores = Maps.newHashMap();
 
     for (Long movieId: moviesUserLikes) {
+      // Get the most similar movies to this movie that the user already likes.
       SortedSimilarities sortedSimilarities = mostSimilarMoviesReader
           .get(KijiRowKeyComponents.fromComponents(movieId.toString()));
+
+      // Nothing similar to this movie -> just skip.
       if (null == sortedSimilarities) {
         LOG.info("Could not find any similar movies for movie " + movieId);
-        // TODO: Do something smarter if there is a problem generating a recommendation.
-        return new MovieRecommendations(Lists.<MovieRecommendation>newArrayList());
+        continue;
       }
-      List<ItemSimilarityScore> similarMovies = mostSimilarMoviesReader
-          .get(KijiRowKeyComponents.fromComponents(movieId.toString())).getSimilarities();
-      for (ItemSimilarityScore itemSimilarityScore : similarMovies) {
+
+      // Add up the similarities of all of the movies similar to this movie that the user likes.
+      for (ItemSimilarityScore itemSimilarityScore : sortedSimilarities.getSimilarities()) {
         Long similarMovie = itemSimilarityScore.getItem();
         // Don't recommend a movie that the user has already seen!
         if (moviesUserLikes.contains(similarMovie)) {
+          LOG.info("User already likes " + similarMovie + ", so not recommending.");
           continue;
         }
         if (!moviesToScores.containsKey(similarMovie)) {
+          LOG.info("New movie to score! " + similarMovie);
           moviesToScores.put(similarMovie, 0.0);
         }
         double currentScore = moviesToScores.get(similarMovie);
@@ -152,18 +158,21 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
       }
     }
 
+    // TODO: Special case if moviesToScore is empty - global most-popular movies?
+
     // Now we sort by weight and take the top N.
     List<Map.Entry<Long, Double>> moviesAndScores = Lists.newArrayList(moviesToScores.entrySet());
     Collections.sort(moviesAndScores, new Comparator<Map.Entry<Long, Double>>() {
       @Override
       public int compare(Map.Entry<Long, Double> o1, Map.Entry<Long, Double> o2) {
-        return o1.getValue().compareTo(o2.getValue());
+        // (We want to reverse-sort here, so multiply by -1.)
+        return -1 * o1.getValue().compareTo(o2.getValue());
       }
     });
 
     int numMoviesToRecommend = moviesAndScores.size() < 10 ? moviesAndScores.size() : 10;
     List<Map.Entry<Long, Double>> moviesToRecommend =
-        moviesAndScores.subList(0, numMoviesToRecommend-1);
+        moviesAndScores.subList(0, numMoviesToRecommend);
     List<MovieRecommendation> recommendations = Lists.newArrayList();
 
     for (Map.Entry<Long, Double> movieAndRating : moviesToRecommend)  {

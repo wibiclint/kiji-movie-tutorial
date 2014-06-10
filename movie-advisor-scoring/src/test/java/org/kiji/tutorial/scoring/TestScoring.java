@@ -1,11 +1,13 @@
 package org.kiji.tutorial.scoring;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -23,6 +25,7 @@ import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiClientTest;
 import org.kiji.schema.KijiColumnName;
 import org.kiji.schema.KijiDataRequest;
+import org.kiji.schema.KijiRowData;
 import org.kiji.schema.KijiTable;
 import org.kiji.schema.KijiTableReader;
 import org.kiji.schema.KijiTableWriter;
@@ -34,6 +37,8 @@ import org.kiji.schema.util.Resources;
 import org.kiji.scoring.batch.ScoreFunctionJobBuilder;
 import org.kiji.tutorial.avro.ItemSimilarityScore;
 import org.kiji.tutorial.avro.MovieRating;
+import org.kiji.tutorial.avro.MovieRecommendation;
+import org.kiji.tutorial.avro.MovieRecommendations;
 import org.kiji.tutorial.avro.SortedSimilarities;
 
 public class TestScoring extends KijiClientTest {
@@ -41,6 +46,7 @@ public class TestScoring extends KijiClientTest {
   private Kiji mKiji;
   private KijiTable mUsersTable;
   private KijiTable mMoviesTable;
+  private KijiTableReader mUsersReader;
 
   private static final Long DONTCARE_TIMESTAMP = 0L;
 
@@ -67,7 +73,9 @@ public class TestScoring extends KijiClientTest {
 
     // Populate the users table.
     populateUsersTable();
+    populateMoviesTable();
 
+    mUsersReader = mUsersTable.openTableReader();
   }
 
   private void populateUsersTable() throws IOException {
@@ -90,8 +98,6 @@ public class TestScoring extends KijiClientTest {
 
     final KijiTableWriter writer = mMoviesTable.openTableWriter();
     try {
-      EntityId eid = mUsersTable.getEntityId("0L");
-
       // Movie 0 is most similar to movie 10
       writer.put(
           mMoviesTable.getEntityId("0"),
@@ -128,6 +134,7 @@ public class TestScoring extends KijiClientTest {
 
   @After
   public void cleanupTestScoreFunctionJobBuilder() throws IOException {
+    mUsersReader.close();
     mUsersTable.release();
     mMoviesTable.release();
   }
@@ -152,7 +159,25 @@ public class TestScoring extends KijiClientTest {
 
     assertTrue(sfJob.run());
 
-    // TODO: Some assertions on outputs...
+    // Check that we see the movies recommended in the correct order.
+    KijiRowData rowData = mUsersReader.get(
+        mUsersTable.getEntityId("0"),
+        KijiDataRequest.create("recommendations", "foo")
+    );
+
+    MovieRecommendations recommendations = rowData.getMostRecentValue("recommendations", "foo");
+    assertNotNull(recommendations);
+
+    List<MovieRecommendation> recommendationList = recommendations.getRecommendations();
+    assertEquals(3, recommendationList.size());
+    assertEquals(Long.valueOf(12L), recommendationList.get(0).getShowId());
+    assertEquals(Long.valueOf(11L), recommendationList.get(1).getShowId());
+    assertEquals(Long.valueOf(13L), recommendationList.get(2).getShowId());
+
+    assertEquals(0.7, recommendationList.get(0).getWeight(), 0.001);
+    assertEquals(0.5, recommendationList.get(1).getWeight(), 0.001);
+    assertEquals(0.1, recommendationList.get(2).getWeight(), 0.001);
+
   }
 
 }
