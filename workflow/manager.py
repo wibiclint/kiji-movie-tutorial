@@ -1,7 +1,5 @@
 """ Python script to manage running jobs, checking the results, etc. """
 
-# TODO: Should have an option to do a sanity check "kiji scan" after all operations
-
 import argparse
 import os
 import pprint
@@ -32,6 +30,7 @@ class MovieAdvisorManager:
         'import-user-info',
         'import-movie-info',
         'train-item-item-cf',
+        'register-freshener',
     ]
 
     actions_help = {
@@ -55,6 +54,9 @@ class MovieAdvisorManager:
         "train-item-item-cf":
             "Calculate item-item similarities",
 
+        "register-freshener":
+            "Register freshener for scoring function",
+
         "help-actions":
             "Print this help",
     }
@@ -63,6 +65,8 @@ class MovieAdvisorManager:
         # 'train/target/train-1.0-SNAPSHOT-jar-with-dependencies.jar',
         #'schema/target/schema-1.0-SNAPSHOT-jar-with-dependencies.jar',
         'avro/target/movie-advisor-avro-1.0-SNAPSHOT.jar',
+        # Needed on classpath for registering the scoring function and executing it.
+        'movie-advisor-scoring/target/movie-advisor-scoring-1.0-SNAPSHOT.jar'
     )
 
     # This is the path from movie_advisor_home
@@ -143,7 +147,7 @@ class MovieAdvisorManager:
             "--show-classpath",
             action="store_true",
             default=False,
-            help="Echo $KIJICLASSPATH and exit")
+            help="Echo $KIJI_CLASSPATH and exit")
 
         return parser
 
@@ -157,7 +161,7 @@ class MovieAdvisorManager:
         self.movie_advisor_home = opts.movie_advisor_home
         self.bento_home = opts.bento_home
         self.bento_tgz = opts.bento_tgz
-        self.kiji_uri = "kiji://.env/dtv"
+        self.kiji_uri = "kiji://.env/tutorial"
 
         # "express job" takes a jar file as an argument
         assert os.path.isfile(os.path.join(self.movie_advisor_home, self.express_jar))
@@ -314,6 +318,22 @@ class MovieAdvisorManager:
         )
         self._scan_table("movies")
 
+    def _do_action_register_freshener(self):
+        """ Register the score function! """
+        policy = "org.kiji.scoring.lib.AlwaysFreshen"
+        score_function = "org.kiji.tutorial.scoring.MovieRecommendationScoreFunction"
+        params = \
+            '{org.kiji.tutorial.scoring.MovieRecommendationScoreFunction.kvstore_table_uri:"kiji://.env/dtv/movies/"}'
+        target = self.kiji_uri + "/users/recommendations:foo"
+        self._run_kiji_job(
+            "kiji fresh --do=register --policy-class=%s --score-function-class=%s --parameters='%s' --target=%s" % (
+                policy,
+                score_function,
+                params,
+                target
+            )
+        )
+
     def _run_actions(self):
         """ Run whatever actions the user has specified """
 
@@ -334,6 +354,9 @@ class MovieAdvisorManager:
 
         if "train-item-item-cf" in self.actions:
             self._do_action_train()
+
+        if "register-freshener" in self.actions:
+            self._do_action_register_freshener()
 
     def go(self, args):
         self._parse_options(args)

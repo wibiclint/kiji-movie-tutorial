@@ -19,3 +19,8 @@ TODOs:
 - Calculate global best movies to use as default recommendations?
 - Set up a model repository and scoring server?
 - Test for importing ratings!
+
+Integration with what Amit wrote for SOLR:
+- Eventually want to use the MovieLens 10M dataset
+- Only additional information in that dataset is tags
+- The input file format also changes, so we'll need different bulk importers

@@ -2,3 +2,4 @@ run/
 target/
 eff.xml
 *.iml
+*.swp
