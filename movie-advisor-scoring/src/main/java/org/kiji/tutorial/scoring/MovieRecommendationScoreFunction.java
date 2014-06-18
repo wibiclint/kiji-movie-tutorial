@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -183,6 +184,9 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
           new MovieRecommendation(movieAndRating.getKey(), movieAndRating.getValue()));
     }
 
-    return new MovieRecommendations(recommendations);
+    final MovieRecommendations returnValue = new MovieRecommendations(recommendations);
+    Preconditions.checkNotNull(returnValue);
+    LOG.debug("Returned not null!");
+    return returnValue;
   }
 }

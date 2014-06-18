@@ -29,7 +29,7 @@
 (defn home-page-user []
   (let [userid (session/get :user)
         user-info (kiji/get-user-info userid)
-        movie-recs (kiji/get-top-N-movies-for-user userid)
+        movie-recs (kiji/get-top-N-movies-for-user-as-movie-info userid)
         ]
     (layout/common
       [:h1 "Home page" userid]
