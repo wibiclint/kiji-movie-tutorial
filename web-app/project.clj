@@ -21,6 +21,8 @@
                  [org.apache.hbase/hbase "0.94.6-cdh4.3.0"]
                  ; Avro records!
                  [org.kiji.tutorial/movie-advisor-avro "1.0-SNAPSHOT"]
+                 ; The score function
+                 [org.kiji.tutorial/movie-advisor-scoring "1.0-SNAPSHOT"]
                  [log4j/log4j "1.2.16" :exclusions [javax.mail/mail javax.jms/jms com.sun.jdmk/jmxtools com.sun.jmx/jmxri]]
                  ]
   ; Turn on to figure out what is happening with log4j

@@ -28,14 +28,14 @@
 ; Provide a way to log out.
 (defn home-page-user []
   (let [userid (session/get :user)
-        ;movie-recs (kiji/get-top-N-movies-for-user userid)
         user-info (kiji/get-user-info userid)
+        movie-recs (kiji/get-top-N-movies-for-user userid)
         ]
     (layout/common
       [:h1 "Home page" userid]
       [:p "User " userid " logged in"]
-      ;[:p "Top movies = " (apply str (interpose "," movie-recs))]
       [:p "User info = " (.toString user-info)]
+      [:p "Top movies = " (apply str (interpose "," movie-recs))]
       (link-to "/logout" "log out"))))
 
 (defn home-page []

@@ -19,11 +19,11 @@
         ; Calling a Java varargs method from Clojure requires passing in an array
         entity-id (.getEntityId kiji-table (to-array [(.toString userid)]))
         data-request (KijiDataRequest/create "recommendations" "foo")
+        ; Get a MovieRecommendations object
         movie-recs (-> (.get fresh-kiji-table-reader entity-id data-request)
                        (.getMostRecentValue "recommendations" "foo"))]
-    ; "movie-recs" is of type "MovieRecommendations"
-    (map (.getRecommendations movie-recs)
-         #(.getShowId %))))
+    ; Now remove the 
+    (map #(.getShowId %) (.getRecommendations movie-recs))))
 
 ; Connect to Kiji and read back user information.
 ; Return a list of show IDs, sorted from most- to least-highly recommended.

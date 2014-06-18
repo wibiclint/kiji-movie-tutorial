@@ -150,7 +150,7 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
           continue;
         }
         if (!moviesToScores.containsKey(similarMovie)) {
-          LOG.info("New movie to score! " + similarMovie);
+          LOG.info("New movie to score and possibly recommend! " + similarMovie);
           moviesToScores.put(similarMovie, 0.0);
         }
         double currentScore = moviesToScores.get(similarMovie);
@@ -160,6 +160,7 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
 
     // TODO: Special case if moviesToScore is empty - global most-popular movies?
 
+    LOG.info("Sorting the movies by total weight...");
     // Now we sort by weight and take the top N.
     List<Map.Entry<Long, Double>> moviesAndScores = Lists.newArrayList(moviesToScores.entrySet());
     Collections.sort(moviesAndScores, new Comparator<Map.Entry<Long, Double>>() {
@@ -171,11 +172,13 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
     });
 
     int numMoviesToRecommend = moviesAndScores.size() < 10 ? moviesAndScores.size() : 10;
+    LOG.info("Going to recommend a total of " + numMoviesToRecommend + " movies.");
     List<Map.Entry<Long, Double>> moviesToRecommend =
         moviesAndScores.subList(0, numMoviesToRecommend);
     List<MovieRecommendation> recommendations = Lists.newArrayList();
 
     for (Map.Entry<Long, Double> movieAndRating : moviesToRecommend)  {
+      LOG.info("Recommending movie " + movieAndRating.getKey());
       recommendations.add(
           new MovieRecommendation(movieAndRating.getKey(), movieAndRating.getValue()));
     }

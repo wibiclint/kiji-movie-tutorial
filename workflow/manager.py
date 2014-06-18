@@ -10,7 +10,13 @@ from argparse import RawTextHelpFormatter
 
 def run(cmd):
     print(cmd)
-    return subprocess.check_output(cmd, shell=True).decode('utf-8')
+    try:
+        res = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    except subprocess.CalledProcessError as cpe:
+        print("Error runn command " + cmd)
+        print("Output = " + cpe.output.decode('utf-8'))
+        raise cpe
+    return res
 
 
 class TimeInterval:
@@ -323,7 +329,7 @@ class MovieAdvisorManager:
         policy = "org.kiji.scoring.lib.AlwaysFreshen"
         score_function = "org.kiji.tutorial.scoring.MovieRecommendationScoreFunction"
         params = \
-            '{org.kiji.tutorial.scoring.MovieRecommendationScoreFunction.kvstore_table_uri:"kiji://.env/dtv/movies/"}'
+            '{org.kiji.tutorial.scoring.MovieRecommendationScoreFunction.kvstore_table_uri:"%s/movies/"}' % self.kiji_uri
         target = self.kiji_uri + "/users/recommendations:foo"
         self._run_kiji_job(
             "kiji fresh --do=register --policy-class=%s --score-function-class=%s --parameters='%s' --target=%s" % (
