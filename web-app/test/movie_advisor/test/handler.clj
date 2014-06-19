@@ -1,7 +1,19 @@
 (ns movie-advisor.test.handler
   (:use clojure.test
         ring.mock.request
-        movie-advisor.handler))
+        movie-advisor.handler)
+  (:import (org.kiji.schema KijiClientTest)))
+
+(defn setup-test-kiji
+  "Use KijiClientTest to set up a test Kiji instance."
+  [f]
+  (def kiji-client-test (KijiClientTest.))
+  (.setupKijiTest kiji-client-test)
+  (def kiji-instance (.getKiji kiji-client-test))
+  (f)
+  )
+
+(use-fixtures :once setup-test-kiji)
 
 (deftest test-app
   (testing "main route"

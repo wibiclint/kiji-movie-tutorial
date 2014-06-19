@@ -28,9 +28,10 @@ TODOs
 - Refactor out code that talks to Kiji as much as possible
 - Unit tests!!!!!!!
   - Not sure how to do this with Kiji
-  - Likely need to use HBase maven plugin with Clojure (?!)
-  - Can also use the Clojure `with-redefs` macro to redefine the Kiji interface to do reasonable
-    things
+    - Can include KijiSchema test JAR and use KijiClientTest (also use separate profile for testing
+      in leiningen)
+    - Can also use the Clojure `with-redefs` macro to redefine the Kiji interface to do reasonable
+      things
 
 
 ### Recommendation stuff
