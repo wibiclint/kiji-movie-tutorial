@@ -1,6 +1,65 @@
 This is a multi-module Maven project that contains the source code for a movie rating and
 recommendation service, MovieAdvisor.
 
+How to run
+==========
+
+(We assume below that you can cloned the repository into a directory `movie-advisor-repository`.)
+
+Start by building all of the submodules in Maven:
+```
+cd movie-advisor-tutorial
+mvn clean install
+```
+This should build and install JARs for the following:
+
+- Table layouts (useful to be in a JAR so that they can be on the classpath for testing)
+- Avro records for movie ratings, recommendations, etc.
+- Express jobs for bulk loading data and computing item similarities
+- Score function for calculating top-N next movies for a given user
+
+Next, create a temp directory to run everything and copy your Bento Box tarball there.  Then run the
+python script `movie-advisor-tutorial/workflow/manager.py`:
+```
+python3 movie-advisor-tutorial/workflow/manager.py \
+  --movie-advisor-home=movie-advisor-tutorial \
+  install-bento \
+  import-user-info \
+  create-tables \
+  import-ratings \
+  import-movie-info \
+  train-item-item-cf \
+  register-freshener \
+  --kill-bento
+```
+
+This script will do the following:
+
+- Kill any existing Bento process
+- Untar the Bento Box
+- Start the Bento Box
+- Create the users and movies tables
+- Import movie ratings, movie metadata, and user metadata
+- Calculate item-item similarity
+- Register the score function
+
+Now you are ready to start the web app!  To do so, you need to have Clojure and its build system,
+Leiningen, installed.  If you are on a Mac, you can do `brew install clojure` (I think that will
+install Clojure and Leiningen).  Now you can start the website:
+```
+cd movie-advisor-tutorial/web-app
+lein ring server
+```
+Running this command should automatically open up the site in your web browser.
+
+Enjoy!
+
+
+
+
+Random other notes:
+===================
+
 Planned features:
 
 - Top-N recommended movies
