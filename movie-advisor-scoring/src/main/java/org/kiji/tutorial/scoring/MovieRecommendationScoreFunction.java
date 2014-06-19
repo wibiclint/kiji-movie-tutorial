@@ -109,20 +109,23 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
 
     // Get all of the movies that the user has rated above 3.5 stars.
     Set<Long> moviesUserLikes = Sets.newHashSet();
+    // Get a list of all of the movies (don't recommend one of these!)
+    Set<Long> moviesUserHasSeen = Sets.newHashSet();
     for (KijiCell<MovieRating> cell : dataToScore.<MovieRating>asIterable("ratings")) {
       MovieRating movieRating = cell.getData();
       if (movieRating.getRating() > 3.5) {
         moviesUserLikes.add(movieRating.getMovieId());
       }
-
+      moviesUserHasSeen.add(movieRating.getMovieId());
     }
 
     // Return the recommended song from the top songs.
-    return TimestampedValue.create(recommend(moviesUserLikes, mostSimilarMoviesReader));
+    return TimestampedValue.create(recommend(moviesUserLikes, moviesUserHasSeen, mostSimilarMoviesReader));
   }
 
   static MovieRecommendations recommend(
       final Set<Long> moviesUserLikes,
+      final Set<Long> moviesUserHasSeen,
       final KeyValueStoreReader<KijiRowKeyComponents, SortedSimilarities> mostSimilarMoviesReader
   ) throws IOException {
     LOG.info("Performing scoring for movie recommendations");
@@ -146,8 +149,8 @@ public class MovieRecommendationScoreFunction extends ScoreFunction<MovieRecomme
       for (ItemSimilarityScore itemSimilarityScore : sortedSimilarities.getSimilarities()) {
         Long similarMovie = itemSimilarityScore.getItem();
         // Don't recommend a movie that the user has already seen!
-        if (moviesUserLikes.contains(similarMovie)) {
-          LOG.info("User already likes " + similarMovie + ", so not recommending.");
+        if (moviesUserHasSeen.contains(similarMovie)) {
+          LOG.info("User already saw " + similarMovie + ", so not recommending.");
           continue;
         }
         if (!moviesToScores.containsKey(similarMovie)) {

@@ -7,7 +7,41 @@
             [hiccup.form :refer :all]
             [noir.session :as session]
             [noir.response :refer [redirect]]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre])
+  (:import (java.text SimpleDateFormat)
+           (java.util Date)))
+
+;--------------------------------------------------------------------------------
+; Common stuff
+(defn render-movie-selector []
+  (form-to [:post "/movies"]
+            [:p "Enter the ID of a movie to view / rate:"]
+            (text-field "movie-id")
+            [:br]
+            (submit-button "go"))
+)
+
+(defn long-to-date-string [date-as-long]
+  (let [date-format (SimpleDateFormat. "MMM yyyy")
+        date (Date. date-as-long)]
+    (.toString (.format date-format date))))
+
+; Render MovieInfo on the page.
+(defn render-movie [movie-info]
+  [:div.movie (link-to (str "/movies/" (.getMovieId movie-info)) (.getTitle movie-info))
+    ;(str " - (" (long-to-date-string (.getTheaterReleaseDate movie-info)) ") ")
+   " "
+    (link-to (.getImdbUrl movie-info) "[IMDB]")]
+)
+
+(defn movie-rating-form [movie-id message & extra-rating-options]
+  (let [rating-options (concat [5 4 3 2 1] extra-rating-options)]
+   (form-to [:post (str "/movies/" movie-id)]
+            [:p message]
+            (drop-down :rating rating-options 5)
+            [:br]
+            (submit-button "rate!")
+            )))
 
 ;--------------------------------------------------------------------------------
 ; Home page stuff
@@ -21,8 +55,7 @@
   (layout/common
     [:h1 "Home page"]
     [:p "No user logged in"]
-    (link-to "/login" "log in!")
-    [:p "Kiji URI is " (.toString (.getURI kiji/kiji))]))
+    (link-to "/login" "log in!")))
 
 ; User is logged in!
 ;
@@ -35,16 +68,13 @@
         movie-recs (kiji/get-top-N-movies-for-user-as-movie-info userid)]
     (layout/common
       ; TODO: Handle login for user that does not exist.
-      [:h1 "Home page" userid]
-      [:p "User " userid " logged in"]
-      [:p "User info = " (.toString user-info)]
-      [:p "Top movies = " (apply str (interpose "," movie-recs))]
-      (form-to [:post "/movies"]
-               [:p "Enter the ID of a movie to view / rate:"]
-               (text-field "movie-id")
-               [:br]
-               (submit-button "go"))
-
+      [:h1 "Home page"]
+      [:p "Welcome, user #" userid "!"]
+      ;[:p "User info = " (.toString user-info)]
+      [:h3 "Movies most recommended for you:"]
+      (for [movie-info movie-recs] (render-movie movie-info))
+      (render-movie-selector)
+      [:br]
       (link-to "/logout" "log out"))))
 
 (defn home-page []
@@ -83,22 +113,11 @@
 ;--------------------------------------------------------------------------------
 ; View / rate movies
 
-; Return html-formatted movies and ratings
-(defn print-movie-ratings [movies-to-ratings]
-  [:p "Most-similar movies and their ratings for this user!"]
-  [:br]
-  [:ul
-  (map
-    (fn [[movie-id rating]] [:li (if rating
-                             (str "Movie " movie-id " got rating " rating)
-                             (str "Movie " movie-id " was not rated!"))]) movies-to-ratings)
-   ]
-)
-
 ; Print out content if user *has* rated this movie.
 ; rating-info is of type MovieRating
 (defn movie-page-if-user-has-rated [movie-id rating-info]
-  [[:p "You gave this movie a rating of " (.getRating rating-info) " stars."]])
+  [[:p "You gave this movie a rating of " (.getRating rating-info) " stars."]
+   (movie-rating-form movie-id "Re-rate this movie!" ["unrate"])])
 
 ; Print out content if the user has *not* rated this movie.
 ; Estimate his/her rating by doing the following:
@@ -118,7 +137,8 @@
         ;_ (timbre/info "Got numerator")
         avg-den (reduce + (map (fn [[movieid rating]] (get movies-to-similarities movieid)) ratings))]
         ;_ (timbre/info "Got denom")
-    [[:p "Predicted rating for this movie = " (/ (* 1.0 avg-num) avg-den)]]
+    [[:p "Predicted rating for this movie = " (/ (* 1.0 avg-num) avg-den)]
+     (movie-rating-form movie-id "Seen this movie?  Rate it now!")]
 ))
 
 
@@ -127,18 +147,26 @@
   ; Define the initial content
   (let
     [user-id (session/get :user)
-     standard-content [[:h1 "Movie page!"] [:p (str "Movie ID = " movie-id)] [:p (kiji/get-movie-info movie-id)]]
+     movie-info (kiji/get-movie-info movie-id)
+     standard-content [[:h1 "Movie page!"] (render-movie movie-info)]
      movie-ratings (kiji/get-movie-ratings user-id [movie-id])
+     ; Get either:
+     ; - the user's rating for this movie and similar movies he/she might like
+     ; - a predicted rating for this movie
      additional-content (if (nil? (get movie-ratings movie-id))
                                   (movie-page-if-user-has-not-rated user-id movie-id)
                                   (movie-page-if-user-has-rated movie-id (get movie-ratings movie-id)))]
     ;(timbre/info "Let's render the page!")
   (layout/common (concat standard-content additional-content)))
 
-    ; Get either:
-    ; - the user's rating for this movie and similar movies he/she might like
-    ; - a predicted rating for this movie
 )
+
+(defn rate-movie [movie-id rating]
+  (let [user-id (session/get :user)]
+    (if (= rating "unrate")
+      (kiji/delete-rating user-id movie-id)
+      (kiji/rate-movie user-id movie-id rating))
+    (redirect (str "/movies/" movie-id))))
 
 (defroutes home-routes
   ; Login
@@ -153,8 +181,8 @@
   (POST "/movies" [movie-id] (redirect (str "/movies/" movie-id)))
 
   ; Movie page
-  (GET "/movies/:movie-id" [movie-id] (movie-page movie-id))
-  ;(POST "/movies/:movie-id" [rating] (rate-movie rating))
+  (GET  ["/movies/:movie-id", :movie-id #"[0-9]+"] [movie-id] (movie-page movie-id))
+  (POST "/movies/:movie-id" [movie-id rating] (rate-movie movie-id rating))
 
   ; Home page
   (GET "/" [] (home-page))

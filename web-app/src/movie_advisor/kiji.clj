@@ -1,7 +1,8 @@
 (ns movie-advisor.kiji
   (:require [taoensso.timbre :as timbre])
   (:import (org.kiji.schema Kiji Kiji$Factory KijiURI KijiDataRequest)
-           (org.kiji.scoring FreshKijiTableReader$Builder)))
+           (org.kiji.scoring FreshKijiTableReader$Builder)
+           (org.kiji.tutorial.avro MovieRating)))
 
 (defn init []
 
@@ -99,3 +100,15 @@
     ; TODO: Assert not null
     ; Turn into a list
     (.getSimilarities most-similar)))
+
+(defn delete-rating [user-id movie-id]
+  (let [table-writer (.openTableWriter users-table)
+        entity-id (get-entity-id users-table user-id)]
+    (.deleteColumn table-writer entity-id "ratings" (str movie-id))))
+
+(defn rate-movie [user-id movie-id rating]
+  (let [table-writer (.openTableWriter users-table)
+        entity-id (get-entity-id users-table user-id)
+        movie-rating (MovieRating. (Long/parseLong movie-id) (Integer/parseInt rating) (System/currentTimeMillis))]
+    (.put table-writer entity-id "ratings" (str movie-id) movie-rating)))
+

@@ -31,3 +31,4 @@ Integration with what Amit wrote for SOLR:
 Show users why they were recommended a particular movie
 - During scoring, keep track of the movies whose weight contributed to a given recommendation
 - Then add that to the recommendation Avro object
+
