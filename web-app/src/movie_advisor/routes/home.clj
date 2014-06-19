@@ -116,6 +116,10 @@
   [[:p "You gave this movie a rating of " (.getRating rating-info) " stars."]
    (movie-rating-form movie-id "Re-rate this movie!" ["unrate"])])
 
+; "Neighborhood" size to use for scoring an individual movie.
+; Neighborhood size of 20 recommended by GroupLens researchers for this dataset.
+(def SCORE-FUNCTION-NEIGHBORHOOD-SIZE 20)
+
 ; Print out content if the user has *not* rated this movie.
 ; Estimate his/her rating by doing the following:
 ; - Get the most-similar movies to this movie
@@ -126,11 +130,14 @@
         ratings-and-unseen (kiji/get-movie-ratings user-id (map #(.getItem %) most-similar))
         ; This will be a list of [movieid, rating] pairs without any nil ratings
         ratings (remove #(nil? (second %)) ratings-and-unseen)
+        ; Take the proper neighborhood size
+        neighborhood-ratings (take SCORE-FUNCTION-NEIGHBORHOOD-SIZE ratings)
+
         ; Create a map of movie to similarity
         movies-to-similarities (into {} (map #(vector (.getItem %) (.getSimilarity %)) most-similar))
         ; Compute the estimated rating for the user.
-        avg-num (reduce + (map (fn [[movieid rating]] (* (.getRating rating) (get movies-to-similarities movieid))) ratings))
-        avg-den (reduce + (map (fn [[movieid rating]] (get movies-to-similarities movieid)) ratings))
+        avg-num (reduce + (map (fn [[movieid rating]] (* (.getRating rating) (get movies-to-similarities movieid))) neighborhood-ratings))
+        avg-den (reduce + (map (fn [[movieid rating]] (get movies-to-similarities movieid)) neighborhood-ratings))
         predicted-rating (/ (* 1.0 avg-num) avg-den)
         message (cond
                   (> predicted-rating 4.0) "We think you will love this movie!"

@@ -22,5 +22,5 @@ abstract class MovieJob(args: Args) extends KijiJob(args) {
   val kijiUri = args("kiji")
   val moviesUri = KijiURI.newBuilder(kijiUri).withTableName("movies").build
   val usersUri = KijiURI.newBuilder(kijiUri).withTableName("users").build
-  val modelSize = 40 // TODO: Make an optional command-line argument.
+  val modelSize = args.getOrElse("model-size", "200").toInt
 }

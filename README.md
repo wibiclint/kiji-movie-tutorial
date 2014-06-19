@@ -7,28 +7,45 @@ Planned features:
 - Predicted rating for a single movie
 - Explanation of why we recommend a movie?
 
-TODOs:
-- normalize ratings by item mean or user mean?
-- what to use for M?  (M = number of item similarities to keep for each item)
-- what to use for K?  (K = number of items similar to the item in question that a user has rated to
-  try to predict rating for item in question)
-- Note that M should be much greater than K (need to balance memory with accuracy)
+TODOs
+-----
+
+### Back-end code
+
 - Should be bulk-loading into HFiles (or something else for Cassandra)
 - Use typed pipes everywhere in Express code and use case classes for pipe types
+  - Fix this once we have typed pipes in express
 - Possibly implement some batch recommenders in Java to show how to use KijiMR and KijiSchema
-- Calculate global best movies to use as default recommendations?
 - Set up a model repository and scoring server?
-- Test for importing ratings!
+  - Likely not right now, these are too early
+- Run the scorer in batch to provide initial recommendations for each user?
 
-Integration with what Amit wrote for SOLR:
-- Eventually want to use the MovieLens 10M dataset
-- Only additional information in that dataset is tags
-- The input file format also changes, so we'll need different bulk importers
 
+### Front-end code
+
+- Need a way to create a new user
+- Organize routes into different name spaces
+- Unit tests!!!!!!!
+  - Not sure how to do this with Kiji
+  - Likely need to use HBase maven plugin with Clojure (?!)
+
+
+### Recommendation stuff
+
+- Calculate global best movies to use as default recommendations?
 - Address cold start problem by seeding each new user with the globally most-popular movies?
-- Or run the scorer in batch to provide initial recommendations for each user?
+- Show users why they were recommended a particular movie
+  - Add field for "why" to MovieRecommendation Avro record
+  - During scoring, keep track of the movies whose weight contributed to a given recommendation
+  - Then add the most significant contributors to the Avro record
 
-Show users why they were recommended a particular movie
-- During scoring, keep track of the movies whose weight contributed to a given recommendation
-- Then add that to the recommendation Avro object
+
+### Solr integration
+
+- Personalized search
+  - Figure out what genres a given user likes the most
+  - Weight search terms by genres
+  - Work with MovieLens 10M dataset to use tags
+
+
 

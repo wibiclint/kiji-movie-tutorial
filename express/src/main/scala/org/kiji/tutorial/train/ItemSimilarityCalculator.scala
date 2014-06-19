@@ -43,7 +43,8 @@ class ItemSimilarityCalculator(args: Args) extends MovieJob(args) with ModelPipe
 
 
   // For each item, sort its similar items by similarity and grab the N most-similar items.
-  val similarityRecordsPipe = ItemSimilarityCalculator.createSortedSimilarityRecords(itemItemSimilarityPipe)
+  val similarityRecordsPipe =
+    ItemSimilarityCalculator.createSortedSimilarityRecords(itemItemSimilarityPipe, modelSize)
 
   // Convert the movieId to an entityId and write to the Kiji table.
   similarityRecordsPipe
