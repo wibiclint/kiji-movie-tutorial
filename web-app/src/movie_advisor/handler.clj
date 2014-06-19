@@ -1,6 +1,8 @@
 (ns movie-advisor.handler
   (:require [compojure.core :refer [defroutes]]
             [movie-advisor.routes.home :refer [home-routes]]
+            [movie-advisor.routes.auth :refer [auth-routes]]
+            [movie-advisor.routes.viewmovie :refer [view-movie-routes]]
             [movie-advisor.middleware :as middleware]
             [movie-advisor.kiji :as kiji]
             [noir.util.middleware :refer [app-handler]]
@@ -50,8 +52,8 @@
 
 
 (def app (app-handler
-           ;; add your application routes here
-           [home-routes app-routes]
+           ;; add your application routes here (make sure app-routes is last!)
+           [home-routes auth-routes view-movie-routes app-routes]
            ;; add custom middleware here
            :middleware [middleware/template-error-page
                         middleware/log-request]
