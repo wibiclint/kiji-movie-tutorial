@@ -14,12 +14,12 @@
 ;--------------------------------------------------------------------------------
 ; Common stuff
 (defn render-movie-selector []
-  (form-to [:post "/movies"]
-            [:p "Enter the ID of a movie to view / rate:"]
-            (text-field "movie-id")
-            [:br]
-            (submit-button "go"))
-)
+  (form-to 
+    {:class "pure-form"}
+    [:post "/movies"]
+    [:legend "Enter the ID of a movie to view / rate"]
+    (text-field {:size 5 :placeholder "Movie ID"} "movie-id") " "
+    (submit-button {:class "pure-button"} "go")))
 
 (defn long-to-date-string [date-as-long]
   (let [date-format (SimpleDateFormat. "MMM yyyy")
@@ -30,18 +30,19 @@
 (defn render-movie [movie-info]
   [:div.movie (link-to (str "/movies/" (.getMovieId movie-info)) (.getTitle movie-info))
     ;(str " - (" (long-to-date-string (.getTheaterReleaseDate movie-info)) ") ")
-   " "
-    (link-to (.getImdbUrl movie-info) "[IMDB]")]
+   ;" "
+    ;(link-to (.getImdbUrl movie-info) "[IMDB]")
+   ]
 )
 
 (defn movie-rating-form [movie-id message & extra-rating-options]
   (let [rating-options (concat [5 4 3 2 1] extra-rating-options)]
-   (form-to [:post (str "/movies/" movie-id)]
-            [:p message]
-            (drop-down :rating rating-options 5)
-            [:br]
-            (submit-button "rate!")
-            )))
+   (form-to 
+     {:class "pure-form"}
+     [:post (str "/movies/" movie-id)]
+     [:legend message]
+     (drop-down :rating rating-options 5) " "
+     (submit-button {:class "pure-button"} "rate!"))))
 
 ;--------------------------------------------------------------------------------
 ; Home page stuff
@@ -53,7 +54,7 @@
 ; Prompt for login.
 (defn home-page-no-user []
   (layout/common
-    [:h1 "Home page"]
+    [:h2 "Home page"]
     [:p "No user logged in"]))
 
 ; User is logged in!
@@ -67,11 +68,12 @@
         movie-recs (kiji/get-top-N-movies-for-user-as-movie-info userid)]
     (layout/common
       ; TODO: Handle login for user that does not exist.
-      [:h1 "Home page"]
+      [:h2 "Home page"]
       [:p "Welcome, user #" userid "!"]
       ;[:p "User info = " (.toString user-info)]
       [:h3 "Movies most recommended for you:"]
       (for [movie-info movie-recs] (render-movie movie-info))
+      [:br]
       (render-movie-selector))))
 
 (defn home-page []
@@ -86,14 +88,12 @@
 
 (defn login-page []
   (layout/common
-    [:h1 "Login page!"]
+    [:h2 "Login page!"]
     ; Text box with login
-    (form-to [:post "/login"]
-             [:p "User Id:"]
-             (text-field "user")
-             [:br]
-             (submit-button "login"))
-))
+    (form-to
+      {:class "pure-form"}
+      [:post "/login"]
+      [:legend "Login information"] (text-field {:size 5 :placeholder "user id"} "user") " " (submit-button {:class "pure-button"} "login"))))
 
 (defn handle-login [user]
   ; TODO: Check no current user!
@@ -127,14 +127,16 @@
         ; This will be a list of [movieid, rating] pairs without any nil ratings
         ratings (remove #(nil? (second %)) ratings-and-unseen)
         ; Create a map of movie to similarity
-        ;_ (timbre/info "Got ratings " ratings)
         movies-to-similarities (into {} (map #(vector (.getItem %) (.getSimilarity %)) most-similar))
-        ;_ (timbre/info "Got movies to similarities " movies-to-similarities)
+        ; Compute the estimated rating for the user.
         avg-num (reduce + (map (fn [[movieid rating]] (* (.getRating rating) (get movies-to-similarities movieid))) ratings))
-        ;_ (timbre/info "Got numerator")
-        avg-den (reduce + (map (fn [[movieid rating]] (get movies-to-similarities movieid)) ratings))]
-        ;_ (timbre/info "Got denom")
-    [[:p "Predicted rating for this movie = " (/ (* 1.0 avg-num) avg-den)]
+        avg-den (reduce + (map (fn [[movieid rating]] (get movies-to-similarities movieid)) ratings))
+        predicted-rating (/ (* 1.0 avg-num) avg-den)
+        message (cond
+                  (> predicted-rating 4.0) "We think you will love this movie!"
+                  (> predicted-rating 2.0) "You may like this movie."
+                  :else "You may not like this movie.")]
+    [[:p message] [:p (format "(Predicted rating = %.1f)" predicted-rating)]
      (movie-rating-form movie-id "Seen this movie?  Rate it now!")]
 ))
 
@@ -145,7 +147,7 @@
   (let
     [user-id (session/get :user)
      movie-info (kiji/get-movie-info movie-id)
-     standard-content [[:h1 "Movie page!"] (render-movie movie-info)]
+     standard-content [ [:h2 (.getTitle movie-info)] [:p (link-to (.getImdbUrl movie-info) "View on IMDB")]]
      movie-ratings (kiji/get-movie-ratings user-id [movie-id])
      ; Get either:
      ; - the user's rating for this movie and similar movies he/she might like

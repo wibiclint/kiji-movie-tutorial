@@ -29,7 +29,16 @@
                        (link-to "/logout" "Log out")
                        (link-to "/login" "Log in"))]
   (html5
-    [:head [:title "Movie Advisor!!!!!!!!"]
-    (include-css "/css/screen.css")]
-    [:body [:div login-or-out " | " (link-to "/" "Home")] body])))
+    [:head [:title "Movie Advisor!!!"]
+    ;(include-css "/css/screen.css")
+    (include-css "/css/top.css")
+    (include-css "http://yui.yahooapis.com/pure/0.5.0/pure-min.css")]
+    [:body 
+     [:div#container 
+      [:div#header [:h1 {:align "center"} "Movie Advisor"]]
+      [:div#navigation [:ul
+                        [:li login-or-out] [:li (link-to "/" "Home")]
+       ]
+      ]
+      [:div#content body][:div#footer "Copyright WibiData 2014"]]])))
 
