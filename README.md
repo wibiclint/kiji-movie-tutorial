@@ -24,3 +24,10 @@ Integration with what Amit wrote for SOLR:
 - Eventually want to use the MovieLens 10M dataset
 - Only additional information in that dataset is tags
 - The input file format also changes, so we'll need different bulk importers
+
+- Address cold start problem by seeding each new user with the globally most-popular movies?
+- Or run the scorer in batch to provide initial recommendations for each user?
+
+Show users why they were recommended a particular movie
+- During scoring, keep track of the movies whose weight contributed to a given recommendation
+- Then add that to the recommendation Avro object

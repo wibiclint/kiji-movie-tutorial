@@ -50,15 +50,52 @@
           (-> (.get table-reader entity-id data-request) (.getMostRecentValue "info" "info"))))
       movie-ids)))
 
+; Get a map from movie ids to ratings (MovieRating) for this user
+; Values will be nil if the movie is not rated.
+(defn get-movie-ratings
+  [user-id movie-ids]
+  ; TODO: Check that movie-id is an seq?
+  (timbre/info "Getting movie ratings for user id " user-id " and movies " movie-ids)
+  (let [table-reader (.openTableReader users-table)
+        entity-id (get-entity-id users-table user-id)]
+    ; For every movie ID, do a read in Kiji to get the movie information.
+    (into {} (map 
+      (fn [movie-id] 
+        (let [data-request (KijiDataRequest/create "ratings" (str movie-id))
+              rating-or-nil (-> (.get table-reader entity-id data-request) (.getMostRecentValue "ratings" (str movie-id)))]
+          (timbre/info "Rating for movie " movie-id " is " rating-or-nil)
+          [movie-id rating-or-nil])
+      ) movie-ids))
+  ))
 
 ; Connect to Kiji and read back user information.
-; Return a list of show IDs, sorted from most- to least-highly recommended.
 (defn get-user-info
   [userid]
   (let [table-reader (.openTableReader users-table)
-        ; Calling a Java varargs method from Clojure requires passing in an array
-        entity-id (.getEntityId users-table (to-array [(.toString userid)]))
+        entity-id (get-entity-id users-table userid)
         data-request (KijiDataRequest/create "info" "info")
         user-info (-> (.get table-reader entity-id data-request) (.getMostRecentValue "info" "info"))]
     ; "user-info" is of type "Person"
     user-info))
+
+; Connect to Kiji and read back movie information.
+(defn get-movie-info
+  [movieid]
+  (let [table-reader (.openTableReader movies-table)
+        entity-id (get-entity-id movies-table movieid)
+        data-request (KijiDataRequest/create "info" "info")
+        movie-info (-> (.get table-reader entity-id data-request) (.getMostRecentValue "info" "info"))]
+    ; "movie-info" is of type "MovieInfo"
+    movie-info))
+
+
+; Return vector of similar movies (sorted by similarity)
+(defn get-most-similar-movies
+  [movieid]
+  (let [table-reader (.openTableReader movies-table)
+        entity-id (get-entity-id movies-table movieid)
+        data-request (KijiDataRequest/create "most_similar" "most_similar")
+        most-similar (-> (.get table-reader entity-id data-request) (.getMostRecentValue "most_similar" "most_similar"))]
+    ; TODO: Assert not null
+    ; Turn into a list
+    (.getSimilarities most-similar)))
