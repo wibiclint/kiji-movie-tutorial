@@ -28,6 +28,7 @@
                  [org.apache.curator/curator-test "2.4.1"]
                  [org.kiji.schema/kiji-schema "1.4.3-SNAPSHOT" :classifier "tests"]
                  [org.kiji.testing/fake-hbase "0.1.5"]
+                 [org.kiji.tutorial/movie-advisor-layout "1.0-SNAPSHOT"]
                  ]
   ; Turn on to figure out what is happening with log4j
   ;:jvm-opts ["-Dlog4j.debug"]

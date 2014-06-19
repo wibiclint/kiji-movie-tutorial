@@ -32,6 +32,7 @@ TODOs
       in leiningen)
     - Can also use the Clojure `with-redefs` macro to redefine the Kiji interface to do reasonable
       things
+- Need to close all of the various table readers and writers after testing
 
 
 ### Recommendation stuff
