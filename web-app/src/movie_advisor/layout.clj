@@ -2,6 +2,8 @@
   (:require [selmer.parser :as parser]
             [clojure.string :as s]
             [hiccup.page  :refer [html5 include-css]]
+            [hiccup.element :refer [link-to]]
+            [noir.session :as session]
             [ring.util.response :refer [content-type response]]
             [compojure.response :refer [Renderable]]))
 
@@ -23,8 +25,11 @@
 
 ; Render basic HTML
 (defn common [& body]
+  (let [login-or-out (if-let [user-id (session/get :user)]
+                       (link-to "/logout" "Log out")
+                       (link-to "/login" "Log in"))]
   (html5
     [:head [:title "Movie Advisor!!!!!!!!"]
     (include-css "/css/screen.css")]
-    [:body body]))
+    [:body [:div login-or-out " | " (link-to "/" "Home")] body])))
 

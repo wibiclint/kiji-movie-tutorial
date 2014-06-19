@@ -54,8 +54,7 @@
 (defn home-page-no-user []
   (layout/common
     [:h1 "Home page"]
-    [:p "No user logged in"]
-    (link-to "/login" "log in!")))
+    [:p "No user logged in"]))
 
 ; User is logged in!
 ;
@@ -73,9 +72,7 @@
       ;[:p "User info = " (.toString user-info)]
       [:h3 "Movies most recommended for you:"]
       (for [movie-info movie-recs] (render-movie movie-info))
-      (render-movie-selector)
-      [:br]
-      (link-to "/logout" "log out"))))
+      (render-movie-selector))))
 
 (defn home-page []
   (if (nil? (session/get :user))
