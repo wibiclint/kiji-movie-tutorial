@@ -18,7 +18,9 @@ This should build and install JARs for the following:
 - Express jobs for bulk loading data and computing item similarities
 - Score function for calculating top-N next movies for a given user
 
-Next, create a temp directory to run everything and copy your Bento Box tarball there.  Then run the
+Next, create a temp directory to run everything and copy your Bento Box tarball there.  Within this
+directory, also download and unpack the MovieLens 100K
+[dataset](http://files.grouplens.org/datasets/movielens/ml-100k.zip).  Then run the
 python script `movie-advisor-tutorial/workflow/manager.py`:
 ```
 python3 movie-advisor-tutorial/workflow/manager.py \
@@ -32,6 +34,8 @@ python3 movie-advisor-tutorial/workflow/manager.py \
   register-freshener \
   --kill-bento
 ```
+The script defaults to kiji-bent-ebi-2.0.2.  If you wish to use a different verison, use the
+`--bento-tgz` option to indicate the tarball to use.
 
 This script will do the following:
 
