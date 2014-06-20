@@ -47,6 +47,9 @@ This script will do the following:
 - Calculate item-item similarity
 - Register the score function
 
+Calculating itme-item similarity in KijiExpress can take a while, so the script may appear to be
+hanging.  You may need to wait a couple of minutes.
+
 Now you are ready to start the web app!  To do so, you need to have Clojure and its build system,
 Leiningen, installed.  If you are on a Mac, you can do `brew install clojure` (I think that will
 install Clojure and Leiningen).  Now you can start the website:
